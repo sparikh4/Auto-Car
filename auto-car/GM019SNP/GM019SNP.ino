@@ -53,6 +53,7 @@ void HC()
       bluetoothSerial.println(int(inChar) + 1);
       BTdat = int(inChar);
       Serial.println(BTdat);
+      infra();
     }
   }
 }
@@ -160,14 +161,20 @@ void Straight(int i = 10)
   while (distance[0] > dis && distance[1] > dis && distance[5] > dis && noc < i)
   {
     Serial.println("**Straight");
+    if (distance[0] > dis && distance[1] > dis && distance[5] > dis && noc < i)
+    {
     forward();
     USdisini();
     noc++;
+    }
+    else 
+    break;
   }
   motoroff();
+  delay(700);
 }
 
-void reverse(int tim = 5,int rsp = 210, int lsp = 140)
+void reverse(int tim = 5, int rsp = 210, int lsp = 140)
 {
   Serial.println("--Reverse");
   analogWrite(motors[1], rsp);
@@ -242,6 +249,29 @@ void fturn(String j, int tim = TTime) //LF,RR,LR,RF
   motoroff();
 
 }
+
+
+void autono(int i = 20)
+{
+  infra();
+  Straight();
+  int dist = 10;
+  if (distance[0] < dist || distance[1] < dist || distance[5] < dist)
+  {
+    BTcontrol();
+    fturn("r");    //right
+    if (distance[0] > dist && distance[1] > dist && distance[5] > dist)
+    {
+      fturn("r");    //another right
+    }
+  }
+  else
+  {
+    fturn("l");
+  }
+}
+
+
 void BTcontrol()
 {
   {
@@ -306,6 +336,10 @@ void BTcontrol()
         BTdat = 52;
       }
 
+      else if (BTdat == 57) {
+        autono();
+      }
+
       if (BTdat == 51 || BTdat == 49)
         BTdat = 1;
       HC();
@@ -316,21 +350,6 @@ void BTcontrol()
 }
 
 
-void autono(int i=20)
-{
-   infra();
-   Straight();
-   int dist=10;
-   if(distance[0] > dist && distance[1] > dist && distance[5] > dist)
-   {
-      fturn("r");    //right
-      if(distance[0] > dist && distance[1] > dist && distance[5] > dist)
-      {
-        fturn("r");    //another right
-      }
-   }
-   
-}
 
 
 
