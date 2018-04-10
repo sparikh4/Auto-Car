@@ -356,6 +356,7 @@ void BTcontrol()
 void loop() {
   HC();
   BTcontrol();
+   
   //BTcontrol();
   // reverse();
   //rStraight();
