@@ -47,6 +47,7 @@ void setup() {
   //pinMode(rhorn, OUTPUT);
   pinMode(fan, OUTPUT);
   USini();
+  
 }
 void HC()
 { if ( bluetoothSerial.available()) {
@@ -56,6 +57,8 @@ void HC()
       BTdat = int(inChar);
       Serial.println(BTdat);
       infra();
+
+       
     }
   }
 }
@@ -80,8 +83,8 @@ long distance[4], duration[4];
 //INTS That Matter-----------------------------
 
 int nos = 4;
-int dis = 15;
-int dis2=8;
+int dis = 25;
+int dis2=12;
 int rdis = 25;
 int goFor = 1;
 int fsp = 245;
@@ -298,6 +301,7 @@ void autono(int i = 20)
   if (distance[0] < dist || distance[1] < dist || distance[2] < dist)
   {
     BTcontrol();
+    rStraight(2);
     fturn("r");    //right
     Straight();
     if (distance[0] > dist && distance[1] > dist && distance[2] > dist)
