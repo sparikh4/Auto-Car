@@ -1,13 +1,3 @@
-/*
-   Controlling LEDs with bluetooth from a android phone
-
-   Use the Arduino Bluetooth Controller app that is availble on the Google Play store
-   download it with the link below.
-
-    https://play.google.com/store/apps/details?id=com.AppDroidRM.arduinobluetoothcontroller
-
-*/
-
 #include <SoftwareSerial.h>
 
 SoftwareSerial bluetoothSerial(10, 11); // Tx pin of the bluetooth module must be connected to Rx pin on arduino
@@ -22,34 +12,46 @@ String buttonId;
 int buttonState = 0;
 int pinNum = 0;
 int BTdat = -1;
-int Ttime = 150;
+int Ttime = 200;
 int TTime = 450;
-int fireL = 17;
-int fireN = 16;
-
+int fireL = 9;
+int fireN = 51;
+int ledl=35;
+int ledr=7;
+int ledrear=37;
+int eon=39;
+int eoff=40;
+int horn=41;
+int rhorn=42;
+int lrl=9;
+int lrr=51;
+int fan=22;
+int runn=43;
 
 void setup() {
   Serial.begin(9600);
-  //set the digital pins
-  //  pinMode(led1, OUTPUT);
-  //  pinMode(led2, OUTPUT);
-  //  pinMode(led3, OUTPUT);
   //start communication with bluetooth module
   bluetoothSerial.begin(9600);
-  //set all pins to off as default to start with
-  //  digitalWrite(led1, LOW);
-  //  digitalWrite(led2, LOW);
-  //  digitalWrite(led3, LOW);
   pinMode(A3, INPUT);
-  pinMode(fireL, OUTPUT);
-  pinMode(fireN, OUTPUT);
+  pinMode(lrl,INPUT);
+  pinMode(lrr,INPUT);
+  //pinMode(fireL, OUTPUT);
+  //pinMode(fireN, OUTPUT);
+  pinMode(ledl, OUTPUT);
+  pinMode(ledr, OUTPUT);
+  pinMode(ledrear, OUTPUT);
+  pinMode(eon, OUTPUT);
+  //pinMode(eoff, OUTPUT);
+    pinMode(runn, OUTPUT);
+  pinMode(horn, OUTPUT);
+  //pinMode(rhorn, OUTPUT);
+  pinMode(fan, OUTPUT);
   USini();
 }
 void HC()
 { if ( bluetoothSerial.available()) {
     while ( bluetoothSerial.available()) {
       char inChar = (char) bluetoothSerial.read(); //read the input
-
       bluetoothSerial.println(int(inChar) + 1);
       BTdat = int(inChar);
       Serial.println(BTdat);
@@ -64,8 +66,8 @@ void HC()
 //INTS to live by--------------------------------
 
 
-const int usT[6] = {5, 14, 8, 6, 3, 31}; //TRIG Pins
-const int usE[6] = {13, 9, 15, 7, 2, 30}; //Echo Pins
+const int usT[4] = {8, 5, 3,31}; //TRIG Pins
+const int usE[4] = {15, 13, 2,30}; //Echo Pins
 const int motors[4] = {4, A9, A11, A10}; //LF,RR,LR,RF
 /*
   Yellow - left forward
@@ -73,12 +75,13 @@ const int motors[4] = {4, A9, A11, A10}; //LF,RR,LR,RF
   White-  left rev
   Orange- right rev
 */
-long distance[6], duration[6];
+long distance[4], duration[4];
 
 //INTS That Matter-----------------------------
 
-int nos = 6;
-int dis = 25;
+int nos = 4;
+int dis = 15;
+int dis2=8;
 int rdis = 25;
 int goFor = 1;
 int fsp = 245;
@@ -101,23 +104,19 @@ void USdisini()
     duration[i] = pulseIn(usE[i], HIGH);
     distance[i] = ((duration[i] / 58.138) * .4); //*2.54 for cm//*.39 for inch
     //send (Message[i]);
-    if (distance[i] > 250)
-      Serial.print(-1);
-    else
+//    if (distance[i] > 250)
+//      Serial.print(-1);
+//    else
       Serial.print(distance[i]);
     Serial.print("<-");
     if (i == 0)
-      Serial.print(" Front\t");
+      Serial.print(" RIGHT\t");
     else if (i == 1)
-      Serial.print(" R-Front\t");
+      Serial.print(" FRONT\t");
     else if (i == 2)
-      Serial.print(" Right\t");
+      Serial.print(" LEFT\t");
     else if (i == 3)
       Serial.print(" Rear\t");
-    else if (i == 4)
-      Serial.print(" Left\t");
-    else
-      Serial.println(" L-Front\t");
     delay(50);
   }
   Serial.println("");
@@ -139,6 +138,9 @@ void USini()
 void forward(int tim = 3, int rsp = fsp - 44, int lsp = 255)
 {
   Serial.println("--Forward");
+  digitalWrite(runn, HIGH);
+  delay(20);
+  digitalWrite(runn, LOW);
   analogWrite(motors[3], rsp);
   analogWrite(motors[0], lsp);
   delay(tim);
@@ -154,44 +156,52 @@ void motoroff()
   delay(100);
   Serial.println("MotorsOFF");
 }
-void Straight(int i = 10)
+void Straight(int i = 6)
 {
   USdisini();
+  Serial.println("**StraightINI");
   int noc = 0;
-  while (distance[0] > dis && distance[1] > dis && distance[5] > dis && noc < i)
+  while (distance[0] > dis2 && distance[1] > dis && distance[2] > dis2 && noc < i)
   {
+    
     Serial.println("**Straight");
-    if (distance[0] > dis && distance[1] > dis && distance[5] > dis && noc < i)
+    if (distance[0] > dis2 && distance[1] > dis && distance[2] > dis2 && noc < i)
     {
     forward();
     USdisini();
     noc++;
     }
-    else 
+    else
     break;
   }
   motoroff();
-  delay(700);
+  delay(70);
 }
 
 void reverse(int tim = 5, int rsp = 210, int lsp = 140)
 {
+  digitalWrite(ledrear,HIGH);
   Serial.println("--Reverse");
+  //digitalWrite(rhorn,HIGH);
+  //delay(20);
+  //digitalWrite(rhorn,LOW);
   analogWrite(motors[1], rsp);
   analogWrite(motors[2], lsp);
   delay(tim);
   //  motoroff();
+  digitalWrite(ledr,LOW);
 }
 
-void rStraight(int i = 2)
+void rStraight(int i = 3)
 {
+  digitalWrite(ledrear,HIGH);
   USdisini();
   int noc = 0;
-  while (distance[3] > rdis && noc < i)
+  while (distance[3] > dis && noc < i)
   {
     USdisini();
-    if (distance[3] < rdis)
-      break;
+    if (distance[3]<dis)
+    break;
     Serial.println("**rStraight");
     reverse();
     Serial.print(".................................");
@@ -199,27 +209,40 @@ void rStraight(int i = 2)
     noc++;
   }
   motoroff();
+  digitalWrite(ledrear,LOW);
 }
 
 void infra()
 {
-  int infraval = analogRead(A3);
+int infral=digitalRead(lrl);
+int infrar=digitalRead(lrr);
+
   Serial.print("FireStat");
-  Serial.println(infraval);
-  if (infraval <= 50)
+  Serial.println(infral);
+  Serial.println(infrar);
+  if (infral==0 || infrar==0)
   {
-    motoroff();
-    digitalWrite(fireL, HIGH);
-    digitalWrite(fireL, LOW);
+    //motoroff();
+    //digitalWrite(fireL, HIGH);
+    //digitalWrite(fireL, LOW);
     BTdat = 100;
+    Serial.println("yo_in_fire");
+    digitalWrite(fan, LOW);
+    delay(5000);
+    digitalWrite(fan, HIGH);
+    return;
   }
   else
-    digitalWrite(fireN, HIGH);
+    return;
 }
 
-void turn(String j, int tim = Ttime) //LF,RR,LR,RF
+void turn(String j, int tim = 500) //LF,RR,LR,RF
 {
-  motoroff();
+  //motoroff();
+  if(j=="l")
+    digitalWrite(ledl,HIGH);
+  else
+    digitalWrite(ledr,HIGH);
   delay(100);
   int r = 100, l = 153;
   if (j == "l") {
@@ -231,10 +254,18 @@ void turn(String j, int tim = Ttime) //LF,RR,LR,RF
   analogWrite(motors[3], r);
   delay(Ttime);
   motoroff();
-
+  if(j=="l")
+    digitalWrite(ledl,LOW);
+  else
+    digitalWrite(ledr,LOW);
 }
 void fturn(String j, int tim = TTime) //LF,RR,LR,RF
 {
+  if(j=="l")
+    digitalWrite(ledl,HIGH);
+  else
+    digitalWrite(ledr,HIGH);
+  delay(100);
   motoroff();
   delay(100);
   int r = 100, l = 153;
@@ -247,40 +278,49 @@ void fturn(String j, int tim = TTime) //LF,RR,LR,RF
   analogWrite(motors[3], r);
   delay(TTime);
   motoroff();
-
+  if(j=="l")
+    digitalWrite(ledl,LOW);
+  else
+    digitalWrite(ledr,LOW);
 }
 
 
 void autono(int i = 20)
 {
   infra();
+  if (distance[1]>dis)
   Straight();
   int dist = 10;
-  if (distance[0] < dist || distance[1] < dist || distance[5] < dist)
+  if (distance[0] < dist || distance[1] < dist || distance[2] < dist)
   {
     BTcontrol();
     fturn("r");    //right
-    if (distance[0] > dist && distance[1] > dist && distance[5] > dist)
+    Straight();
+    if (distance[0] > dist && distance[1] > dist && distance[2] > dist)
     {
       fturn("r");    //another right
+      Straight();
     }
   }
   else
   {
     fturn("l");
+    rStraight();
   }
 }
+
 
 
 void BTcontrol()
 {
   {
+    digitalWrite(fan,HIGH);
     int i;
     HC();
-    infra();
+    //infra();
     if (BTdat == 100)
     {
-      delay(1000000);
+      //delay(1000000);
     }
     if (BTdat == 53) {
       i = 0;
@@ -290,77 +330,96 @@ void BTcontrol()
       i = -1;
       Serial.println("-------------Power On---------------");
     }
-    while (i == -1)   ///locha
+    while (i == -1)
     {
+      Serial.println("ON");
       infra();
       if (BTdat == 100)
       {
-        delay(1000000);
+        //delay(1000000);
       }
-      else if (BTdat == 52)
+      else if (BTdat == 52) //no4
       {
+        
         Straight();
       }
       else if (BTdat == 48)
       {
+        //digitalWrite(ledrear,HIGH);
         rStraight();
         BTdat = 0;
+        //digitalWrite(ledrear,LOW);
       }
-      else if (BTdat == 51)      //right
+      else if (BTdat == 51)      //right no3
       {
         Serial.println("===============right");
+        //digitalWrite(ledr,HIGH);
         turn("r");           //add args
         BTdat = 52;
+        //digitalWrite(ledr,LOW);
       }
-      else if (BTdat == 49)
+      else if (BTdat == 49)/// no1
       {
         Serial.println("=================left");
+        //digitalWrite(ledl,HIGH);
         turn("l");           //add args
         BTdat = 52;
+        //digitalWrite(ledl,LOW);
       }
-      else if (BTdat == 53) {
+      else if (BTdat == 53) { //5
         i = 0;
+        motoroff();
         Serial.println("-------------Power Off---------------");
+        //digitalWrite(eoff,HIGH);
+        //delay(20);
+        //digitalWrite(eoff,LOW);
         break;
       }
-      else if (BTdat == 54) {
+      else if (BTdat == 54) { //6
         i = -1;
         Serial.println("-------------Power On---------------");
+        digitalWrite(eon,HIGH);
+        delay(20);
+        digitalWrite(eon,LOW);
       }
-      else if (BTdat == 55) {
+      else if (BTdat == 55) { //7
+        //digitalWrite(ledl,HIGH);
         fturn("l");
-        BTdat = 52;
+        BTdat = 0;
+        //BTdat = 52;
+        //digitalWrite(ledl,LOW);
       }
-      else if (BTdat == 56) {
+      else if (BTdat == 56) { //8
+        //digitalWrite(ledr,HIGH);
         fturn("r");
-        BTdat = 52;
+        BTdat = 0;
+        //BTdat = 52;
+        //digitalWrite(ledr,LOW);
       }
 
-      else if (BTdat == 57) {
+      else if (BTdat == 57) { //9
         autono();
       }
 
-      if (BTdat == 51 || BTdat == 49)
+      else if (BTdat == 50) {   //2
+        digitalWrite(horn,HIGH);
+        delay(20);
+        digitalWrite(horn,LOW);
+      }
+      if (BTdat == 51)
         BTdat = 1;
       HC();
+      //motoroff();
     }// end while
   }
-
-
 }
 
-
-
-
-
 void loop() {
-  HC();
-  BTcontrol();
-   
+ // USdisini();
+HC();
+BTcontrol();
   //BTcontrol();
   // reverse();
   //rStraight();
 
 }
-
-
