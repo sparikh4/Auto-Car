@@ -19,7 +19,7 @@ int fireN = 51;
 int ledl=35;
 int ledr=7;
 int ledrear=37;
-int eon=39;
+int eon=45;
 int eoff=40;
 int horn=41;
 int rhorn=42;
@@ -138,14 +138,15 @@ void USini()
 void forward(int tim = 3, int rsp = fsp - 44, int lsp = 255)
 {
   Serial.println("--Forward");
-  digitalWrite(runn, HIGH);
-  delay(20);
-  digitalWrite(runn, LOW);
+
+  //delay(500);
+  
   analogWrite(motors[3], rsp);
   analogWrite(motors[0], lsp);
   delay(tim);
 
   //  //motoroff();
+
 }
 void motoroff()
 {
@@ -158,12 +159,14 @@ void motoroff()
 }
 void Straight(int i = 6)
 {
+    digitalWrite(runn, HIGH);
   USdisini();
   Serial.println("**StraightINI");
   int noc = 0;
   while (distance[0] > dis2 && distance[1] > dis && distance[2] > dis2 && noc < i)
   {
-    
+    digitalWrite(runn, LOW);
+   digitalWrite(runn, HIGH); 
     Serial.println("**Straight");
     if (distance[0] > dis2 && distance[1] > dis && distance[2] > dis2 && noc < i)
     {
@@ -176,6 +179,7 @@ void Straight(int i = 6)
   }
   motoroff();
   delay(70);
+  digitalWrite(runn, LOW);
 }
 
 void reverse(int tim = 5, int rsp = 210, int lsp = 140)
@@ -379,7 +383,7 @@ void BTcontrol()
         i = -1;
         Serial.println("-------------Power On---------------");
         digitalWrite(eon,HIGH);
-        delay(20);
+        delay(500);
         digitalWrite(eon,LOW);
       }
       else if (BTdat == 55) { //7
@@ -403,8 +407,9 @@ void BTcontrol()
 
       else if (BTdat == 50) {   //2
         digitalWrite(horn,HIGH);
-        delay(20);
+        delay(500);
         digitalWrite(horn,LOW);
+        BTdat = 0;
       }
       if (BTdat == 51)
         BTdat = 1;
